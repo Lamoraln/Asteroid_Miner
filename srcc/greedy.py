@@ -1,4 +1,4 @@
-from utils import distance
+from logic.utils import distance
 
 def greedy_route(base, asteroids, fuel):
     route = [base]
