@@ -20,6 +20,9 @@ while running:
 
     elif state == "game":
         state = game_loop(screen, selected_level)
+    
+    elif state == "game":
+        state = game_loop(screen, selected_level)
 
     elif state == "quit":
         running = False
