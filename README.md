@@ -133,9 +133,3 @@ g++ -o asteroid_structures src/cpp/structures.cpp
 # Run the game
 python src/main.py
 ```
-
----
-
-## 📄 License
-
-This project was developed for academic purposes at Universidad Distrital Francisco José de Caldas.
