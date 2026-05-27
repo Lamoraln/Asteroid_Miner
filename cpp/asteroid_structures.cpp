@@ -6,38 +6,41 @@
 #include <functional>
 
 // --- RouteList implementation ---
-RouteList::RouteList() : head(nullptr), tail(nullptr) {}
-
-RouteList::~RouteList() { clear(); }
-
-void RouteList::push_back(int asteroid_id)
+void routelist_init(RouteList &list)
 {
-   Node *n = new Node(asteroid_id);
-   if (!head)
-      head = tail = n;
-   else
-   {
-      tail->next = n;
-      tail = n;
-   }
+   list.head = nullptr;
+   list.tail = nullptr;
 }
 
-void RouteList::clear()
+void routelist_clear(RouteList &list)
 {
-   Node *cur = head;
+   RouteListNode *cur = list.head;
    while (cur)
    {
-      Node *tmp = cur->next;
+      RouteListNode *tmp = cur->next;
       delete cur;
       cur = tmp;
    }
-   head = tail = nullptr;
+   list.head = nullptr;
+   list.tail = nullptr;
 }
 
-std::vector<int> RouteList::to_vector() const
+void routelist_push_back(RouteList &list, int asteroid_id)
+{
+   RouteListNode *n = new RouteListNode{asteroid_id, nullptr};
+   if (!list.head)
+      list.head = list.tail = n;
+   else
+   {
+      list.tail->next = n;
+      list.tail = n;
+   }
+}
+
+std::vector<int> routelist_to_vector(const RouteList &list)
 {
    std::vector<int> out;
-   Node *cur = head;
+   RouteListNode *cur = list.head;
    while (cur)
    {
       out.push_back(cur->asteroid_id);
@@ -47,47 +50,51 @@ std::vector<int> RouteList::to_vector() const
 }
 
 // --- AsteroidBST implementation ---
-AsteroidBST::AsteroidBST() : root(nullptr) {}
-
-AsteroidBST::~AsteroidBST() { destroy(root); }
-
-void AsteroidBST::destroy(Node *n)
+static void bst_destroy_nodes(AsteroidBSTNode *n)
 {
    if (!n)
       return;
-   destroy(n->left);
-   destroy(n->right);
+   bst_destroy_nodes(n->left);
+   bst_destroy_nodes(n->right);
    delete n;
 }
 
-void AsteroidBST::insert(const Asteroid &a) { insert_node(root, a); }
+void bst_init(AsteroidBST &bst) { bst.root = nullptr; }
 
-void AsteroidBST::insert_node(Node *&n, const Asteroid &a)
+void bst_clear(AsteroidBST &bst)
+{
+   bst_destroy_nodes(bst.root);
+   bst.root = nullptr;
+}
+
+static void bst_insert_node(AsteroidBSTNode *&n, const Asteroid &a)
 {
    if (!n)
    {
-      n = new Node(a);
+      n = new AsteroidBSTNode{a, nullptr, nullptr};
       return;
    }
    if (a.value < n->a.value)
-      insert_node(n->left, a);
+      bst_insert_node(n->left, a);
    else
-      insert_node(n->right, a);
+      bst_insert_node(n->right, a);
 }
 
-void AsteroidBST::inorder_node(Node *n, std::vector<Asteroid> &out) const
+void bst_insert(AsteroidBST &bst, const Asteroid &a) { bst_insert_node(bst.root, a); }
+
+static void bst_inorder_node(AsteroidBSTNode *n, std::vector<Asteroid> &out)
 {
    if (!n)
       return;
-   inorder_node(n->left, out);
+   bst_inorder_node(n->left, out);
    out.push_back(n->a);
-   inorder_node(n->right, out);
+   bst_inorder_node(n->right, out);
 }
 
-std::vector<Asteroid> AsteroidBST::inorder() const
+std::vector<Asteroid> bst_inorder(const AsteroidBST &bst)
 {
    std::vector<Asteroid> out;
-   inorder_node(root, out);
+   bst_inorder_node(bst.root, out);
    return out;
 }
 

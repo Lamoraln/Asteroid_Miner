@@ -15,7 +15,7 @@ int main()
 
    double start_x = 0.0, start_y = 0.0;
    double base_x = 0.0, base_y = 0.0;
-   double fuel = 12.0; // example fuel budget
+   double fuel = 10.0; // example fuel budget
 
    std::cout << "Running greedy selection (fuel=" << fuel << ")\n";
    auto greedy = greedy_select(asteroids, start_x, start_y, base_x, base_y, fuel);
@@ -33,9 +33,11 @@ int main()
 
    // Demonstrate BST usage
    AsteroidBST bst;
+   bst_init(bst);
    for (auto &a : asteroids)
-      bst.insert(a);
-   auto sorted = bst.inorder();
+      bst_insert(bst, a);
+   auto sorted = bst_inorder(bst);
+   bst_clear(bst);
    std::cout << "\nAsteroids inorder by value (ascending):\n";
    for (auto &a : sorted)
    {

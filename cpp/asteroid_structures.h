@@ -14,49 +14,40 @@ struct Asteroid
 };
 
 // Simple singly-linked list to store a route (sequence of asteroid ids)
-class RouteList
+struct RouteListNode
 {
-public:
-   struct Node
-   {
-      int asteroid_id;
-      Node *next;
-      Node(int id) : asteroid_id(id), next(nullptr) {}
-   };
-
-   RouteList();
-   ~RouteList();
-   void push_back(int asteroid_id);
-   void clear();
-   std::vector<int> to_vector() const;
-
-private:
-   Node *head;
-   Node *tail;
+   int asteroid_id;
+   RouteListNode *next;
 };
 
-// Binary Search Tree keyed by asteroid value (descending order insertion is supported)
-class AsteroidBST
+struct RouteList
 {
-public:
-   AsteroidBST();
-   ~AsteroidBST();
-   void insert(const Asteroid &a);
-   std::vector<Asteroid> inorder() const; // ascending by value
-
-private:
-   struct Node
-   {
-      Asteroid a;
-      Node *left;
-      Node *right;
-      Node(const Asteroid &ast) : a(ast), left(nullptr), right(nullptr) {}
-   };
-   Node *root;
-   void destroy(Node *n);
-   void insert_node(Node *&n, const Asteroid &a);
-   void inorder_node(Node *n, std::vector<Asteroid> &out) const;
+   RouteListNode *head;
+   RouteListNode *tail;
 };
+
+void routelist_init(RouteList &list);
+void routelist_clear(RouteList &list);
+void routelist_push_back(RouteList &list, int asteroid_id);
+std::vector<int> routelist_to_vector(const RouteList &list);
+
+// Binary Search Tree keyed by asteroid value
+struct AsteroidBSTNode
+{
+   Asteroid a;
+   AsteroidBSTNode *left;
+   AsteroidBSTNode *right;
+};
+
+struct AsteroidBST
+{
+   AsteroidBSTNode *root;
+};
+
+void bst_init(AsteroidBST &bst);
+void bst_clear(AsteroidBST &bst);
+void bst_insert(AsteroidBST &bst, const Asteroid &a);
+std::vector<Asteroid> bst_inorder(const AsteroidBST &bst); // ascending by value
 
 // Algorithms
 // Greedy selection by value/distance ratio. Returns pair(route ids, total value)
