@@ -9,7 +9,7 @@ def level_select_loop(screen):
     levels = [
         LevelCard(90, 200, 330, 330, "Cinturón", 2, "assets/level1.jpg", True),
         LevelCard(430, 200, 330, 330, "Nebulosa", 3, "assets/level2.png", True),
-        LevelCard(770, 200, 330, 330, "Cometas", 0, "assets/level3.png", False),
+        LevelCard(770, 200, 330, 330, "Cometas", 0, "assets/level3.png", True),
     ]
 
     font = pygame.font.SysFont(None, 60)

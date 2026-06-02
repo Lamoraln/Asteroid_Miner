@@ -1,45 +1,24 @@
 from logic.utils import distance
 
-def greedy_route(base, asteroids, fuel):
-    route = [base]
-    current = base
-    total_value = 0
-    remaining = asteroids.copy()
+def greedy_recommendation(current, asteroids, selected_route):
 
-    fuel_left = fuel
+    best = None
+    best_score = -1
 
-    while remaining:
-        best = None
-        best_ratio = 0
+    for asteroid in asteroids:
 
-        for a in remaining:
-            dist_to_a = distance(current, a)
-            dist_to_base = distance(a, base)
+        if asteroid in selected_route:
+            continue
 
-            # Verificar si puede ir y volver
-            if dist_to_a + dist_to_base > fuel_left:
-                continue
+        dist = distance(current, asteroid)
 
-            ratio = a.value / dist_to_a if dist_to_a != 0 else 0
+        if dist == 0:
+            continue
 
-            if ratio > best_ratio:
-                best_ratio = ratio
-                best = a
+        score = asteroid.value / dist
 
-        if best is None:
-            break
+        if score > best_score:
+            best_score = score
+            best = asteroid
 
-        # Consumir combustible
-        fuel_used = distance(current, best)
-        fuel_left -= fuel_used
-
-        route.append(best)
-        total_value += best.value
-        current = best
-        remaining.remove(best)
-
-    # Volver a la base
-    fuel_left -= distance(current, base)
-    route.append(base)
-
-    return route, total_value, fuel_left
+    return best
