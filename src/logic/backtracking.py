@@ -1,41 +1,106 @@
 from logic.utils import distance
 
+nodes_explored = 0
+
+
 def backtracking_route(base, asteroids, fuel):
 
-    best_solution = {
-        "route": [],
-        "value": 0
-    }
+    global nodes_explored
+    nodes_explored = 0
 
-    def backtrack(current, remaining, fuel_left, current_value, route):
+    best_route = []
+    best_value = 0
 
-        # Verificar si puede volver a la base
-        dist_to_base = distance(current, base)
+    def backtrack(
+        current,
+        remaining,
+        fuel_left,
+        current_route,
+        current_value
+    ):
+        global nodes_explored
 
-        if dist_to_base <= fuel_left:
-            if current_value > best_solution["value"]:
-                best_solution["value"] = current_value
-                best_solution["route"] = route + [base]
+        nodes_explored += 1
 
-        # Explorar siguientes asteroides
-        for i, a in enumerate(remaining):
-            dist_to_a = distance(current, a)
-            dist_back = distance(a, base)
+        nonlocal best_route
+        nonlocal best_value
 
-            # Poda: no alcanza combustible para ir y volver
-            if dist_to_a + dist_back > fuel_left:
-                continue
+        # ----------------------------------
+        # PODA
+        # ----------------------------------
 
-            # Llamada recursiva
-            backtrack(
-                a,
-                remaining[:i] + remaining[i+1:],  # quitar el asteroide actual
-                fuel_left - dist_to_a,
-                current_value + a.value,
-                route + [a]
+        remaining_value = sum(
+            asteroid.value
+            for asteroid in remaining
+        )
+
+        if current_value + remaining_value <= best_value:
+            return
+
+        # ----------------------------------
+        # ACTUALIZAR MEJOR SOLUCIÓN
+        # ----------------------------------
+
+        if current_value > best_value:
+
+            best_value = current_value
+
+            best_route = current_route.copy()
+
+        # ----------------------------------
+        # EXPLORAR SIGUIENTES ASTEROIDES
+        # ----------------------------------
+
+        for asteroid in remaining:
+
+            dist_to_asteroid = distance(
+                current,
+                asteroid
             )
 
-    # Iniciar desde la base
-    backtrack(base, asteroids, fuel, 0, [base])
+            fuel_after_move = (
+                fuel_left
+                - dist_to_asteroid
+            )
 
-    return best_solution["route"], best_solution["value"]
+            # combustible insuficiente
+            if fuel_after_move < 0:
+                continue
+
+            # debe poder regresar a base
+            dist_back = distance(
+                asteroid,
+                base
+            )
+            
+
+            if fuel_after_move < dist_back:
+                continue
+
+            new_remaining = [
+                a
+                for a in remaining
+                if a != asteroid
+            ]
+
+            backtrack(
+                asteroid,
+                new_remaining,
+                fuel_after_move,
+                current_route + [asteroid],
+                current_value + asteroid.value
+            )
+
+    backtrack(
+        base,
+        asteroids,
+        fuel,
+        [],
+        0
+    )
+
+    return (
+        best_route,
+        best_value,
+        nodes_explored
+    )

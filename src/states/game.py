@@ -1,4 +1,7 @@
 import pygame
+import json
+import subprocess
+
 from logic.asteroids import Asteroid
 from logic.levels import get_level
 from logic.utils import distance
@@ -12,6 +15,9 @@ def game_loop(screen, level):
     # ---------- CONFIG LEVEL ----------
     level_data = get_level(level)
     base = level_data["base"]
+    nodes_explored = 0
+    optimal_value = 0
+    efficiency = 0
 
     asteroids = level_data["asteroids"]
 
@@ -36,13 +42,16 @@ def game_loop(screen, level):
     def to_screen(a):
         return (a.x * 80 + 50, a.y * 60)
 
+    
+            # ---------- DIBUJAR BASE ----------
+    base_img = pygame.image.load("assets/base.png")
+    base_img = pygame.transform.scale(base_img, (120, 120))
     # ---------- LOOP ----------
+    
     while True:
         screen.fill((10, 10, 30))
 
-        # ---------- DIBUJAR BASE ----------
-        base_img = pygame.image.load("assets/base.png")
-        base_img = pygame.transform.scale(base_img, (120, 120))
+
         base_pos = to_screen(base)
 
         screen.blit(
@@ -89,41 +98,112 @@ def game_loop(screen, level):
                 # FINALIZAR NIVEL
                 if event.key == pygame.K_RETURN and not finished:
 
-                    # regresar a base
                     dist_back = distance(current, base)
 
                     if fuel_left < dist_back:
 
-                        stars = 0
+                        stars = 0 
+                        cpp_message = ""
                         finished = True
                         mission_failed = True
 
                     else:
 
                         fuel_left -= dist_back
-                        
                         selected_route.append(base)
 
-                    # calcular óptimo
-                    optimal_route, optimal_value = backtracking_route(base, asteroids, fuel)
+                        optimal_route, optimal_value, nodes_explored = backtracking_route(
+                            base,
+                            asteroids,
+                            fuel
+                        )
+                        
+                        if optimal_value > 0:
+                            efficiency = round(
+                                (total_value / optimal_value) * 100,
+                                1
+                            )
+                        else:
+                            efficiency = 0
 
-                    ratio = total_value / optimal_value if optimal_value > 0 else 0
+                        ratio = (
+                            total_value / optimal_value
+                            if optimal_value > 0
+                            else 0
+                        )
 
-                    if ratio < 0.5:
-                        stars = 0
-                    elif ratio < 0.7:
-                        stars = 1
-                    elif ratio < 1:
-                        stars = 2
-                    else:
-                        stars = 3
+                        if ratio < 0.5:
+                            stars = 0
+                        elif ratio < 0.7:
+                            stars = 1
+                        elif ratio < 1:
+                            stars = 2
+                        else:
+                            stars = 3
 
-                    print("\n--- RESULTADO ---")
-                    print("Jugador:", total_value)
-                    print("Óptimo:", optimal_value)
-                    print("Estrellas:", stars)
+                        route_data = []
 
-                    finished = True
+                        for asteroid in selected_route:
+
+                            if asteroid.name == "Base":
+                                continue
+
+                            route_data.append({
+                                "name": asteroid.name,
+                                "type": asteroid.type,
+                                "value": asteroid.value
+                            })
+
+                        game_data = {
+                            "level": level,
+                            "resources": total_value,
+                            "stars": stars,
+                            "route": route_data
+                        }
+
+                        with open(
+                            "data/game_state.json",
+                            "w"
+                        ) as file:
+
+                            json.dump(
+                                game_data,
+                                file,
+                                indent=4
+                            )
+
+                        result = subprocess.run(
+                            ["./cpp/asteroid_engine"],
+                            capture_output=True,
+                            text=True
+                        )
+                        
+                        try:
+
+                            with open(
+                                "data/output.json",
+                                "r"
+                            ) as file:
+
+                                output_data = json.load(file)
+
+                                cpp_message = (
+                                    output_data.get(
+                                        "route_saved",
+                                        ""
+                                    )
+                                )
+
+                        except Exception as e:
+
+                            print(e)
+
+                        print(result.stdout)
+
+                        if result.stderr:
+                            print(result.stderr)
+
+                        finished = True
 
                 # SALIR DEL NIVEL
                 if event.key == pygame.K_ESCAPE and finished:
@@ -180,11 +260,43 @@ def game_loop(screen, level):
                     True,
                     (255,215,0)
                 )
+                
+                stats = [
+                    f"Player Value: {total_value}",
+                    f"Optimal Value: {optimal_value}",
+                    f"Efficiency: {efficiency}%",
+                    f"Nodes Explored: {nodes_explored}"
+                ]
+
+                for i, text in enumerate(stats):
+
+                    txt = small_font.render(
+                        text,
+                        True,
+                        (255,255,255)
+                    )
+
+                    screen.blit(
+                        txt,
+                        (430, 700 + i * 25)
+                    )
 
                 screen.blit(result_text,(430,600))
 
             exit_text = font.render("Press ESC to return", True, (200,200,200))
             screen.blit(exit_text, (430, 650))
+            if cpp_message:
+
+                saved_text = font.render(
+                    f"Saved Route: {cpp_message}",
+                    True,
+                    (255,255,255)
+                )
+
+                screen.blit(
+                    saved_text,
+                    (430,700)
+                )
             
         mouse_pos = pygame.mouse.get_pos()
 

@@ -2,6 +2,8 @@ import pygame
 from states.menu import menu_loop
 from states.level_select import level_select_loop
 from states.game import game_loop
+from states.stadistics import statistics_loop
+
 
 pygame.init()
 screen = pygame.display.set_mode((1200, 700))
@@ -14,6 +16,9 @@ running = True
 while running:
     if state == "menu":
         state = menu_loop(screen)
+        
+    elif state == "statistics":
+        state = statistics_loop(screen)
 
     elif state == "level_select":
         state, selected_level = level_select_loop(screen)

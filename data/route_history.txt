@@ -1,0 +1,1 @@
+Level 1 | Resources 450 | Stars 3 | S1->G1->D1->G2->S2

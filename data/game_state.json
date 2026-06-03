@@ -1,0 +1,32 @@
+{
+    "level": 1,
+    "resources": 450,
+    "stars": 3,
+    "route": [
+        {
+            "name": "S1",
+            "type": "silver",
+            "value": 50
+        },
+        {
+            "name": "G1",
+            "type": "gold",
+            "value": 100
+        },
+        {
+            "name": "D1",
+            "type": "diamond",
+            "value": 150
+        },
+        {
+            "name": "G2",
+            "type": "gold",
+            "value": 100
+        },
+        {
+            "name": "S2",
+            "type": "silver",
+            "value": 50
+        }
+    ]
+}
