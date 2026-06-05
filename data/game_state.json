@@ -1,10 +1,10 @@
 {
-    "level": 1,
-    "resources": 450,
+    "level": 2,
+    "resources": 950,
     "stars": 3,
     "route": [
         {
-            "name": "S1",
+            "name": "S2",
             "type": "silver",
             "value": 50
         },
@@ -14,17 +14,32 @@
             "value": 100
         },
         {
-            "name": "D1",
-            "type": "diamond",
-            "value": 150
-        },
-        {
             "name": "G2",
             "type": "gold",
             "value": 100
         },
         {
-            "name": "S2",
+            "name": "D2",
+            "type": "diamond",
+            "value": 150
+        },
+        {
+            "name": "DM2",
+            "type": "dark_matter",
+            "value": 250
+        },
+        {
+            "name": "D3",
+            "type": "diamond",
+            "value": 150
+        },
+        {
+            "name": "G3",
+            "type": "gold",
+            "value": 100
+        },
+        {
+            "name": "S4",
             "type": "silver",
             "value": 50
         }

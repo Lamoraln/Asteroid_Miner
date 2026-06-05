@@ -1,7 +1,7 @@
 {
 "status":"ok",
-"level":1,
-"resources":450,
+"level":2,
+"resources":950,
 "stars":3,
-"route_saved":"S1->G1->D1->G2->S2"
+"route_saved":"S2->G1->G2->D2->DM2->D3->G3->S4"
 }

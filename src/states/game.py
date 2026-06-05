@@ -2,7 +2,6 @@ import pygame
 import json
 import subprocess
 
-from logic.asteroids import Asteroid
 from logic.levels import get_level
 from logic.utils import distance
 from logic.backtracking import backtracking_route
@@ -11,6 +10,18 @@ from logic.greedy import greedy_recommendation
 WIDTH, HEIGHT = 800, 600
 
 def game_loop(screen, level):
+    """
+    Main gameplay loop.
+
+    Responsibilities:
+    - Load level configuration
+    - Handle player input
+    - Draw game elements
+    - Evaluate player performance
+    - Execute greedy recommendations
+    - Execute backtracking optimization
+    - Exchange data with the C++ module
+    """
 
     # ---------- CONFIG LEVEL ----------
     level_data = get_level(level)
@@ -23,7 +34,7 @@ def game_loop(screen, level):
 
     fuel = level_data["fuel"]
 
-    # ---------- ESTADO ----------
+    # ---------- STATE ----------
     selected_route = []
     current = base
     fuel_left = fuel
@@ -43,7 +54,7 @@ def game_loop(screen, level):
         return (a.x * 80 + 50, a.y * 60)
 
     
-            # ---------- DIBUJAR BASE ----------
+            # ---------- DRAW BASE ----------
     base_img = pygame.image.load("assets/base.png")
     base_img = pygame.transform.scale(base_img, (120, 120))
     # ---------- LOOP ----------
@@ -62,7 +73,7 @@ def game_loop(screen, level):
             )
         )
 
-        # ---------- DIBUJAR ASTEROIDES ----------
+        # ---------- DRAW ASTEROIDES ----------
         for a in asteroids:
             pos = to_screen(a)
 
@@ -74,19 +85,19 @@ def game_loop(screen, level):
                 )
             )
 
-        # ---------- DIBUJAR RUTA ----------
+        # ---------- DRAW ROUTE ----------
         prev = base
         for a in selected_route:
             pygame.draw.line(screen, (0, 255, 0), to_screen(prev), to_screen(a), 2)
             prev = a
 
-        # ---------- EVENTOS ----------
+        # ---------- EVENTS ----------
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "quit"
 
             if event.type == pygame.KEYDOWN:
-                # MOSTRAR PISTA GREEDY
+                # SHOW GREEDY HINT
                 if event.key == pygame.K_h:
 
                     greedy_target = greedy_recommendation(
@@ -95,7 +106,7 @@ def game_loop(screen, level):
                         selected_route
                     )
                     
-                # FINALIZAR NIVEL
+                # FINISH LEVEL
                 if event.key == pygame.K_RETURN and not finished:
 
                     dist_back = distance(current, base)
@@ -205,11 +216,11 @@ def game_loop(screen, level):
 
                         finished = True
 
-                # SALIR DEL NIVEL
+                # EXIT LEVEL
                 if event.key == pygame.K_ESCAPE and finished:
                     return "level_select"
 
-            # CLICK EN ASTEROIDES
+            # CLICK EN ASTEROIDS
             if event.type == pygame.MOUSEBUTTONDOWN and not finished:
                 mouse = event.pos
 
@@ -237,7 +248,7 @@ def game_loop(screen, level):
         screen.blit(info_text, (10, 70))
         screen.blit(hint_text, (10, 100))
 
-        # ---------- RESULTADOS ----------
+        # ---------- RESULTS ----------
         if finished:
             
             if mission_failed:

@@ -1,76 +1,234 @@
 import pygame
 
+
 class Button:
-    def __init__(self, text, x, y, w, h):
-        self.rect = pygame.Rect(x, y, w, h)
+    """
+    Custom button with:
+    - 3D text effect
+    - Vertical gradient
+    - Hover animation
+    - Mouse click detection
+    """
+
+    def __init__(
+        self,
+        text,
+        x,
+        y,
+        width,
+        height
+    ):
         self.text = text
-        
-        # Colores Estilo "MINER" (Amarillo -> Naranja)
-        self.color_top = (255, 240, 50)     # Amarillo brillante
-        self.color_bottom = (255, 100, 0)   # Naranja saturado
-        self.color_extrusion = (130, 40, 0) # Marrón rojizo para profundidad
-        
-        # Colores del Marco/Caja
-        self.box_bg = (30, 30, 50)          # Fondo de la caja oscuro
-        self.box_border = (60, 60, 90)      # Borde de la caja
-        self.box_highlight = (100, 100, 150)# Brillo del borde
-        
-        # Fuente (Arial Black es la más similar por defecto)
-        self.font = pygame.font.SysFont("Arial Black", 45)
+
+        # Button area
+        self.rect = pygame.Rect(
+            x,
+            y,
+            width,
+            height
+        )
+
+        # Button state
         self.is_hovered = False
 
-    def create_gradient_text(self, text, t_color, b_color):
-        """Genera el texto con degradado vertical."""
-        text_surf = self.font.render(text, True, (255, 255, 255)).convert_alpha()
-        w, h = text_surf.get_size()
-        gradient = pygame.Surface((w, h)).convert_alpha()
-        
-        for i in range(h):
-            # Mezcla de colores según la altura
-            r = t_color[0] + (b_color[0] - t_color[0]) * i // h
-            g = t_color[1] + (b_color[1] - t_color[1]) * i // h
-            b = t_color[2] + (b_color[2] - t_color[2]) * i // h
-            pygame.draw.line(gradient, (r, g, b), (0, i), (w, i))
-            
-        gradient.blit(text_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        # Main font
+        self.font = pygame.font.SysFont(
+            "Arial Black",
+            45
+        )
+
+        # Cache text size
+        self.text_width, self.text_height = self.font.size(
+            self.text
+        )
+
+        # Gradient colors
+        self.color_top = (255, 240, 50)
+        self.color_bottom = (255, 100, 0)
+
+        # 3D depth color
+        self.color_extrusion = (130, 40, 0)
+
+        # Container colors
+        self.box_bg = (30, 30, 50)
+        self.box_border = (60, 60, 90)
+        self.box_highlight = (100, 100, 150)
+
+    def create_gradient_text(
+        self,
+        text,
+        top_color,
+        bottom_color
+    ):
+        """
+        Creates a text surface with a vertical gradient.
+        """
+
+        text_surface = self.font.render(
+            text,
+            True,
+            (255, 255, 255)
+        ).convert_alpha()
+
+        width, height = text_surface.get_size()
+
+        gradient = pygame.Surface(
+            (width, height)
+        ).convert_alpha()
+
+        for y in range(height):
+
+            r = (
+                top_color[0]
+                + (bottom_color[0] - top_color[0]) * y // height
+            )
+
+            g = (
+                top_color[1]
+                + (bottom_color[1] - top_color[1]) * y // height
+            )
+
+            b = (
+                top_color[2]
+                + (bottom_color[2] - top_color[2]) * y // height
+            )
+
+            pygame.draw.line(
+                gradient,
+                (r, g, b),
+                (0, y),
+                (width, y)
+            )
+
+        gradient.blit(
+            text_surface,
+            (0, 0),
+            special_flags=pygame.BLEND_RGBA_MULT
+        )
+
         return gradient
 
     def draw(self, screen):
-        # 1. Dibujar la CAJA (Contenedor)
-        # Sombra de la caja
-        pygame.draw.rect(screen, (10, 10, 20), (self.rect.x + 4, self.rect.y + 4, self.rect.w, self.rect.h), border_radius=12)
-        # Fondo y borde principal
-        pygame.draw.rect(screen, self.box_bg, self.rect, border_radius=12)
-        border_color = self.box_highlight if self.is_hovered else self.box_border
-        pygame.draw.rect(screen, border_color, self.rect, width=3, border_radius=12)
+        """
+        Draws the button and its hover effects.
+        """
 
-        # 2. Preparar el TEXTO
-        text_x = self.rect.centerx - self.font.size(self.text)[0] // 2
-        text_y = self.rect.centery - self.font.size(self.text)[1] // 2
-        
-        # Ajuste si hay hover (el texto "pulsa" hacia arriba)
-        offset = 2 if self.is_hovered else 0
-        current_y = text_y - offset
+        # Shadow
+        pygame.draw.rect(
+            screen,
+            (10, 10, 20),
+            (
+                self.rect.x + 4,
+                self.rect.y + 4,
+                self.rect.w,
+                self.rect.h
+            ),
+            border_radius=12
+        )
 
-        # 3. Dibujar EXTRUSIÓN del texto (Profundidad 3D)
+        # Main container
+        pygame.draw.rect(
+            screen,
+            self.box_bg,
+            self.rect,
+            border_radius=12
+        )
+
+        border_color = (
+            self.box_highlight
+            if self.is_hovered
+            else self.box_border
+        )
+
+        pygame.draw.rect(
+            screen,
+            border_color,
+            self.rect,
+            width=3,
+            border_radius=12
+        )
+
+        # Center text
+        text_x = (
+            self.rect.centerx
+            - self.text_width // 2
+        )
+
+        text_y = (
+            self.rect.centery
+            - self.text_height // 2
+        )
+
+        # Small hover animation
+        hover_offset = (
+            2 if self.is_hovered else 0
+        )
+
+        current_y = text_y - hover_offset
+
+        # Draw 3D depth
         depth = 6
-        for i in range(depth):
-            depth_surf = self.font.render(self.text, True, self.color_extrusion)
-            screen.blit(depth_surf, (text_x, current_y + i))
 
-        # 4. Dibujar FRENTE del texto (Degradado Amarillo-Naranja)
-        # Aclarar ligeramente en hover
-        t_col = (255, 255, 150) if self.is_hovered else self.color_top
-        b_col = (255, 150, 50) if self.is_hovered else self.color_bottom
-        
-        text_main = self.create_gradient_text(self.text, t_col, b_col)
-        screen.blit(text_main, (text_x, current_y))
+        for offset in range(depth):
+
+            depth_surface = self.font.render(
+                self.text,
+                True,
+                self.color_extrusion
+            )
+
+            screen.blit(
+                depth_surface,
+                (
+                    text_x,
+                    current_y + offset
+                )
+            )
+
+        # Brighter colors on hover
+        top_color = (
+            (255, 255, 150)
+            if self.is_hovered
+            else self.color_top
+        )
+
+        bottom_color = (
+            (255, 150, 50)
+            if self.is_hovered
+            else self.color_bottom
+        )
+
+        front_text = self.create_gradient_text(
+            self.text,
+            top_color,
+            bottom_color
+        )
+
+        screen.blit(
+            front_text,
+            (
+                text_x,
+                current_y
+            )
+        )
 
     def update(self, mouse_pos):
-        self.is_hovered = self.rect.collidepoint(mouse_pos)
+        """
+        Updates hover state.
+        """
+
+        self.is_hovered = self.rect.collidepoint(
+            mouse_pos
+        )
 
     def is_clicked(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.rect.collidepoint(event.pos):
-                return True
-        return False
+        """
+        Returns True when the left mouse button
+        clicks inside the button area.
+        """
+
+        return (
+            event.type == pygame.MOUSEBUTTONDOWN
+            and event.button == 1
+            and self.rect.collidepoint(event.pos)
+        )
